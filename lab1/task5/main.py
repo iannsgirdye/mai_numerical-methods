@@ -15,13 +15,11 @@ np.set_printoptions(precision=ARRAY_DECIMAL_PLACES, suppress=False, linewidth=AR
 
 
 def read_input():
-    """Прочитать числа из input.txt рядом с этим скриптом."""
     with Path(__file__).with_name("input.txt").open(encoding="utf-8") as file:
         return [[float(value) for value in line.split()] for line in file if line.strip()]
 
 
 def read_example():
-    """Прочитать отдельный пример матрицы из example.txt рядом со скриптом."""
     with Path(__file__).with_name("example.txt").open(encoding="utf-8") as file:
         data = [[float(value) for value in line.split()] for line in file if line.strip()]
     n = int(data[0][0])
@@ -37,22 +35,21 @@ def qr(A):
     """Выполнить QR-разложение A = Q · R отражениями Хаусхолдера.
 
     Q — ортогональная матрица; R — верхняя треугольная матрица.
-    Готовая функция numpy.linalg.qr здесь не используется: разложение строим сами.
     """
     n = len(A)
-    R = A.copy().astype(float)  # Из копии A постепенно получим верхнюю треугольную R.
-    Q = np.eye(n)               # В Q будем накапливать отражения Хаусхолдера.
+    R = A.copy().astype(float)
+    Q = np.eye(n)
 
     for k in range(n - 1):
         x = R[k:, k].copy()  # Часть столбца, которую нужно обнулить ниже диагонали.
         norm = np.sqrt(x @ x)
         if norm == 0:
-            continue  # В этой части столбца уже точные нули; отражение не требуется.
+            continue
 
         # Строим вектор отражения. Знак выбран так, чтобы избежать потери точности.
         sign = 1 if x[0] >= 0 else -1
         x[0] += sign * norm
-        x /= np.sqrt(x @ x)  # Нормируем вектор отражения.
+        x /= np.sqrt(x @ x)
 
         # Применяем отражение к R справа, а соответствующее преобразование накапливаем в Q.
         R[k:, k:] -= 2 * np.outer(x, x @ R[k:, k:])
@@ -92,7 +89,6 @@ def qr_eigenvalues(A, eps):
 
     for iteration in range(MAX_QR_ITERATIONS):
         # Если элемент под диагональю стал очень маленьким, считаем его нулём.
-        # Так матрица разделяется на независимые блоки.
         for i in range(1, n):
             threshold = eps * (abs(H[i - 1, i - 1]) + abs(H[i, i]) + matrix_scale * THRESHOLD_SCALE_FLOOR)
             if abs(H[i, i - 1]) < threshold:
@@ -136,7 +132,6 @@ def main():
     A = np.array(data[1:n + 1], dtype=float)
     eps = data[n + 1][0]
 
-    # Сначала строим QR-разложение исходной матрицы и проверяем произведение Q · R.
     Q, R = qr(A)
     Q_R = Q @ R
     print(f"Исходная матрица A:\n{A}\n")
@@ -145,15 +140,12 @@ def main():
     print(f"Произведение Q · R:\n{Q_R}\n")
     print(f"Проверка A = Q · R (максимальное расхождение):\n{max_abs_difference(A, Q_R):.{COMPARISON_SCIENTIFIC_DIGITS}e}\n")
 
-    # Теперь применяем QR-итерации для нахождения всех собственных значений.
     values, H_final, iterations = qr_eigenvalues(A, eps)
     print(f"Заданная точность ε:\n{eps:g}\n")
     print(f"Количество QR-итераций:\n{iterations}\n")
     print(f"Итоговая квазитреугольная матрица H:\n{H_final}\n")
     print(f"Собственные значения λ:\n{values}\n")
 
-    # Отдельный пример читаем из example.txt, чтобы он не смешивался с основной задачей.
-    # NumPy используется здесь для разрешённой условием проверки комплексной пары.
     A_example = read_example()
     example_values = np.linalg.eigvals(A_example)
     print(f"Пример матрицы из example.txt:\n{A_example}\n")
