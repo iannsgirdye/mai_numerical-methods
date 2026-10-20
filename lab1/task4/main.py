@@ -14,7 +14,6 @@ np.set_printoptions(precision=ARRAY_DECIMAL_PLACES, suppress=False, linewidth=AR
 
 
 def read_input():
-    """Прочитать числа из input.txt рядом с этим скриптом."""
     with Path(__file__).with_name("input.txt").open(encoding="utf-8") as file:
         return [[float(value) for value in line.split()] for line in file if line.strip()]
 
@@ -32,9 +31,9 @@ def jacobi_eigen(A, eps):
     Столбцы V — собственные векторы.
     """
     n = len(A)
-    A_work = A.copy().astype(float)  # Матрица, которую постепенно диагонализируем.
-    V = np.eye(n)                    # Здесь накопим все выполненные вращения.
-    errors = []                      # Сюда запишем ошибку после каждого шага.
+    A_work = A.copy().astype(float)
+    V = np.eye(n)
+    errors = []
 
     if n == 1:
         return np.array([A_work[0, 0]]), V, [0.0]
@@ -50,14 +49,14 @@ def jacobi_eigen(A, eps):
         error = abs(A_work[p, q])
         errors.append(error)
         if error < eps:
-            break  # Все внедиагональные элементы достаточно малы.
+            break
 
         # Рассчитываем угол поворота так, чтобы новый элемент A_work[p, q] стал нулём.
         apq = A_work[p, q]
         tau = (A_work[q, q] - A_work[p, p]) / (2 * apq)
         t = np.sign(tau) / (abs(tau) + np.sqrt(1 + tau * tau)) if tau != 0 else 1.0
-        c = 1 / np.sqrt(1 + t * t)  # Косинус угла поворота.
-        s = t * c                   # Синус угла поворота.
+        c = 1 / np.sqrt(1 + t * t)
+        s = t * c
         app, aqq = A_work[p, p], A_work[q, q]
 
         # Обновляем строки и столбцы p и q, сохраняя симметричность матрицы.
@@ -77,8 +76,8 @@ def jacobi_eigen(A, eps):
     else:
         raise RuntimeError(f"Метод вращений Якоби не сошёлся за {MAX_ROTATIONS} шагов.")
 
-    lambda_values = np.diag(A_work).copy()  # Диагональ почти диагональной матрицы — собственные значения.
-    order = np.argsort(lambda_values)       # Сортируем значения для удобства чтения результатов.
+    lambda_values = np.diag(A_work).copy()
+    order = np.argsort(lambda_values)
     return lambda_values[order], V[:, order], errors
 
 
@@ -90,7 +89,7 @@ def main():
     eps = data[n + 1][0]
 
     lambda_values, V, errors = jacobi_eigen(A, eps)
-    Lambda = np.diag(lambda_values)  # Диагональная матрица из найденных собственных значений.
+    Lambda = np.diag(lambda_values)
     A_V = A @ V
     V_Lambda = V @ Lambda
 
@@ -102,8 +101,6 @@ def main():
     print(f"Произведение A · V:\n{A_V}\n")
     print(f"Произведение V · Λ:\n{V_Lambda}\n")
     print(f"Проверка A · V = V · Λ (максимальное расхождение):\n{max_abs_difference(A_V, V_Lambda):.{COMPARISON_SCIENTIFIC_DIGITS}e}\n")
-
-    # Выводим, как уменьшалась ошибка на каждом шаге алгоритма.
     print("Максимальный внедиагональный элемент по шагам:")
     for step, error in enumerate(errors):
         print(f"Шаг {step}: {error:.{COMPARISON_SCIENTIFIC_DIGITS}e}")
