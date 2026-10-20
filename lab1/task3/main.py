@@ -14,7 +14,6 @@ np.set_printoptions(precision=ARRAY_DECIMAL_PLACES, suppress=False, linewidth=AR
 
 
 def read_input():
-    """Прочитать числа из input.txt рядом с этим скриптом."""
     with Path(__file__).with_name("input.txt").open(encoding="utf-8") as file:
         return [[float(value) for value in line.split()] for line in file if line.strip()]
 
@@ -48,20 +47,14 @@ def jacobi(A, b, eps):
 
 
 def seidel(A, b, eps):
-    """Решить A · x = b методом Зейделя.
-
-    В отличие от метода Якоби, здесь сразу используем новые значения,
-    как только они были посчитаны в текущей итерации.
-    """
+    """Решить A · x = b методом Зейделя."""
     n = len(b)
     x = np.zeros(n)  # Начальное приближение.
 
     for iteration in range(1, MAX_ITERATIONS + 1):
-        old_x = x.copy()  # Сохраняем прошлую итерацию для проверки точности.
+        old_x = x.copy()
         for i in range(n):
-            # Значения слева от диагонали уже обновлены на этой итерации.
             left_sum = A[i, :i] @ x[:i]
-            # Значения справа от диагонали пока ещё относятся к прошлой итерации.
             right_sum = A[i, i + 1:] @ old_x[i + 1:]
             x[i] = (b[i] - left_sum - right_sum) / A[i, i]
         if max_abs_value(x - old_x) < eps:
@@ -85,7 +78,6 @@ def main():
     x_seidel, iterations_seidel = seidel(A, b, eps)
 
     # NumPy вычисляет эталонное решение для текущих A и b.
-    # Это позволяет сравнивать итерационные методы с решением той же системы.
     reference = np.linalg.solve(A, b)
     residual_jacobi = max_abs_value(A @ x_jacobi - b)
     residual_seidel = max_abs_value(A @ x_seidel - b)
