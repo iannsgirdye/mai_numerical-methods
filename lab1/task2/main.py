@@ -13,7 +13,6 @@ np.set_printoptions(precision=ARRAY_DECIMAL_PLACES, suppress=False, linewidth=AR
 
 
 def read_input():
-    """Прочитать числа из input.txt рядом с этим скриптом."""
     with Path(__file__).with_name("input.txt").open(encoding="utf-8") as file:
         return [[float(value) for value in line.split()] for line in file if line.strip()]
 
@@ -25,14 +24,12 @@ def thomas(lower, diagonal, upper, b):
     diagonal — главная диагональ (n элементов).
     upper    — верхняя диагональ (n-1 элемент).
     b        — вектор правых частей (n элементов).
-
-    P и Q — прогоночные коэффициенты согласно обозначениям методички.
-    Полная матрица A не создаётся: хранятся только три диагонали.
+    P и Q    — прогоночные коэффициенты.
     """
     n = len(diagonal)
-    P = np.zeros(n)  # Прогоночные коэффициенты P_i.
-    Q = np.zeros(n)  # Прогоночные коэффициенты Q_i.
-    x = np.zeros(n)  # Здесь соберём итоговое решение.
+    P = np.zeros(n)
+    Q = np.zeros(n)
+    x = np.zeros(n)
 
     # На первом шаге нет элемента нижней диагонали.
     first_row_scale = max(abs(diagonal[0]), abs(upper[0]) if n > 1 else 0.0)
@@ -52,7 +49,7 @@ def thomas(lower, diagonal, upper, b):
             P[i] = -upper[i] / denominator
         Q[i] = (b[i] - lower[i - 1] * Q[i - 1]) / denominator
 
-    # По методичке P_n = 0: у последнего уравнения нет элемента верхней диагонали.
+    # У последнего уравнения нет элемента верхней диагонали.
     P[-1] = 0.0
 
     # Обратный ход: используем x_i = P_i · x_(i+1) + Q_i.
